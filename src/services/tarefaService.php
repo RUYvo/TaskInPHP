@@ -7,8 +7,8 @@ class TarefaService
 
     public function __construct(Conexao $conexao, Tarefa $tarefa)
     {
-        $this->$conexao = $conexao->conectar();
-        $this->$tarefa = $tarefa;
+        $this->conexao = $conexao->conectar();
+        $this->tarefa = $tarefa;
     }
 
     public function inserir()
@@ -27,7 +27,7 @@ class TarefaService
             select 
                 t.id, s.status, t.tarefa
             from
-                tb_tarefa as t
+                tb_tarefas as t
                 left join tb_status as s on (t.id_status = s.id) 
         ';
 
@@ -39,7 +39,7 @@ class TarefaService
     public function atualizar()
     {
         //U - update
-        $query = "update tb_tarefa set tarefa = ? where id = ?";
+        $query = "update tb_tarefas set tarefa = ? where id = ?";
         $stmt = $this->conexao->prepare($query);
         $stmt->bindValue(1, $this->tarefa->__get('tarefa'));
         $stmt->bindValue(2, $this->tarefa->__get('id'));
@@ -58,7 +58,7 @@ class TarefaService
     public function marcarRealizada()
     {
         //U - update
-        $query = "update tb_tarefa set id_status = ? where id = ?";
+        $query = "update tb_tarefas set id_status = ? where id = ?";
         $stmt = $this->conexao->prepare($query);
         $stmt->bindValue(1, $this->tarefa->__get('id_status'));
         $stmt->bindValue(2, $this->tarefa->__get('id'));
@@ -69,7 +69,7 @@ class TarefaService
     {
         $query = 'select t.id, s.status, t.tarefa
         from 
-            tb_tarefa as t
+            tb_tarefas as t
             left join tb_status as s on (t.id_status = s.id)
             where 
                 t.id_status = :id_status';

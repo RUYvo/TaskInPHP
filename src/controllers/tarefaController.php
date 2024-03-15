@@ -1,7 +1,7 @@
 <?php
-require "../models/tarefa.php";
-require "../service/tarefa.php";
-require "../models/conexao.php";
+require($_SERVER["DOCUMENT_ROOT"] . '/taskInPhp/src/models/tarefaModel.php');
+require($_SERVER["DOCUMENT_ROOT"] . '/taskInPhp/src/models/conexao.php');
+require($_SERVER["DOCUMENT_ROOT"] . '/taskInPhp/src/services/tarefaService.php');
 
 $acao = isset($_GET['acao']) ? $_GET['acao'] : $acao;
 
@@ -13,7 +13,7 @@ if ($acao == 'inserir') {
     $tarefaService = new TarefaService($conexao, $tarefa);
     $tarefaService->inserir();
 
-    header('Location: ');
+    header('Location: ../views/todasTarefas.php');
 } else if ($acao == 'recuperar') {
     $tarefa = new Tarefa();
     $conexao = new Conexao();
@@ -38,11 +38,12 @@ if ($acao == 'inserir') {
     $tarefaService->remover();
 } else if ($acao == 'recuperarTarefasPendentes') {
     $tarefa = new Tarefa();
-    $tarefa->__set('id_status', 0);
+    $tarefa->__set('id_status', 1);
     $conexao = new Conexao();
 
     $tarefaService = new TarefaService($conexao, $tarefa);
-    $tarefas->$tarefaService->recuperarTarefasPendentes();
+    $tarefas = $tarefaService->recuperarTarefasPendentes();
+
 } else if ($acao == 'marcarRealizada') {
     $tarefa = new Tarefa();
     $tarefa->__set('id', $_GET["id"]->__set("id_status", 1));
