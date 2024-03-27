@@ -46,6 +46,9 @@
 									<div class="form-group">
 										<label>Descrição da tarefa:</label>
 										<input type="text" class="form-control" name="tarefa" placeholder="Exemplo: Lavar o carro">
+
+										<label>Prazo de conclusão:</label>
+										<input type="text" class="form-control" name="prazo" placeholder="Exemplo: 2024-03-26">
 									</div>
 
 									<button class="btn btn-success">Cadastrar</button>

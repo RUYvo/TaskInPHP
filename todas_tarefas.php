@@ -2,13 +2,6 @@
 
 $acao = 'recuperar';
 require 'tarefa_controller.php';
-
-/*
-	echo '<pre>';
-	print_r($tarefas);
-	echo '</pre>';
-	*/
-
 ?>
 
 <html>
@@ -85,6 +78,10 @@ require 'tarefa_controller.php';
 			location.href = 'todas_tarefas.php?acao=ordenarTarefas&atribute=' + atribute;
 			// location.href = 'index.php'
 		}
+		function filterBy(status) {
+			location.href = 'todas_tarefas.php?acao=filtrarTarefas&status=' + status;
+			// location.href = 'index.php'
+		}
 	</script>
 </head>
 
@@ -115,6 +112,12 @@ require 'tarefa_controller.php';
 					<a onclick="orderBy('data_cadastrado')">Data de criação</a>
 					<a onclick="orderBy('tarefa')">Nome</a>
 				</div>
+				<div>
+					<h1>Filtrar Por:</h1>
+					<a onclick="filterBy('1')">Pendentes</a>
+					<a onclick="filterBy('2')">Concluidas</a>
+					<a onclick="location.href = 'todas_tarefas.php?acao=recuperar'">Todas as tarefas</a>
+				</div>
 			</div>
 			<div class="col-sm-9">
 				<div class="container pagina">
@@ -122,11 +125,12 @@ require 'tarefa_controller.php';
 						<div class="col">
 							<h4>Todas tarefas</h4>
 							<hr />
-
+							<div id="tarefas">	
 							<?php foreach ($tarefas as $indice => $tarefa) { ?>
 								<div class="row mb-3 d-flex align-items-center tarefa">
 									<div class="col-sm-9" id="tarefa_<?= $tarefa->id ?>">
 										<?= $tarefa->tarefa ?> (<?= $tarefa->status ?>)
+										<?= $tarefa->prazo?>
 									</div>
 									<div class="col-sm-3 mt-2 d-flex justify-content-between">
 										<i class="fas fa-trash-alt fa-lg text-danger" onclick="remover(<?= $tarefa->id ?>)"></i>
@@ -139,7 +143,7 @@ require 'tarefa_controller.php';
 								</div>
 
 							<?php } ?>
-
+							</div>
 						</div>
 					</div>
 				</div>
@@ -147,5 +151,19 @@ require 'tarefa_controller.php';
 		</div>
 	</div>
 </body>
+<script>
+		(function verificarStatus() {
+			const lista = document.querySelectorAll('#tarefas .tarefa');
+       		lista.forEach(el => {
+			const prazo = new Date(el.outerText.slice(-10,el.outerText.length))
+			prazo.setDate(prazo.getDate()+1)
+            const hoje = new Date();
+
+            if (prazo.getDate() === hoje.getDate() && prazo.getMonth() === hoje.getMonth() && prazo.getFullYear() === hoje.getFullYear()) {
+				el.innerText = el.innerText + " Atenção: O prazo dessa tarefa acaba hoje"
+            }
+        });
+		})()
+</script>
 
 </html>

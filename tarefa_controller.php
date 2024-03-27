@@ -10,6 +10,7 @@ $acao = isset($_GET['acao']) ? $_GET['acao'] : $acao;
 if ($acao == 'inserir') {
 	$tarefa = new Tarefa();
 	$tarefa->__set('tarefa', $_POST['tarefa']);
+	$tarefa->__set('prazo', $_POST['prazo']);
 
 	$conexao = new Conexao();
 
@@ -86,4 +87,11 @@ if ($acao == 'inserir') {
 
 	$tarefaService = new TarefaService($conexao, $tarefa);
 	$tarefas = $tarefaService->ordenarTarefas();
-}
+} 
+else if ($acao == 'filtrarTarefas') {
+	$tarefa = new Tarefa();
+	$conexao = new Conexao();
+
+	$tarefaService = new TarefaService($conexao, $tarefa);
+	$tarefas = $tarefaService->filtrarTarefas();
+} 

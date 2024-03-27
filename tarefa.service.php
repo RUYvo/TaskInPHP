@@ -16,9 +16,10 @@ class TarefaService
 
 	public function inserir()
 	{ //create
-		$query = 'insert into tb_tarefas(tarefa)values(:tarefa)';
+		$query = 'insert into tb_tarefas(tarefa,prazo)values(:tarefa,:prazo)';
 		$stmt = $this->conexao->prepare($query);
 		$stmt->bindValue(':tarefa', $this->tarefa->__get('tarefa'));
+		$stmt->bindValue(':prazo', $this->tarefa->__get('prazo'));
 		$stmt->execute();
 	}
 
@@ -26,7 +27,7 @@ class TarefaService
 	{ //read
 		$query = '
 			select 
-				t.id, s.status, t.tarefa 
+				t.id, s.status, t.tarefa, t.prazo 
 			from 
 				tb_tarefas as t
 				left join tb_status as s on (t.id_status = s.id)
@@ -86,6 +87,14 @@ class TarefaService
 	{
 		$orderBy = $_GET["atribute"];
 		$query = "SELECT t.id, s.status, t.tarefa FROM tb_tarefas as t LEFT JOIN tb_status as s ON (t.id_status = s.id) ORDER BY $orderBy";
+		$stmt = $this->conexao->prepare($query);
+		$stmt->execute();
+		return $stmt->fetchAll(PDO::FETCH_OBJ);
+	}
+
+	public function filtrarTarefas(){
+		$idStatus = $_GET["status"];
+		$query = "SELECT t.id, s.status, t.tarefa FROM tb_tarefas as t LEFT JOIN tb_status as s ON (t.id_status = s.id) WHERE t.id_status = $idStatus";
 		$stmt = $this->conexao->prepare($query);
 		$stmt->execute();
 		return $stmt->fetchAll(PDO::FETCH_OBJ);
