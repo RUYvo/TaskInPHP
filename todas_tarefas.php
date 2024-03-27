@@ -1,7 +1,12 @@
 <?php
-
 $acao = 'recuperar';
-require 'tarefa_controller.php';
+require_once 'tarefa_controller.php';
+
+require_once 'db.service.php';
+$conexao = new Conexao();
+$dbService = new DbService($conexao);
+$categorias = $dbService->pegarCategorias();
+
 ?>
 
 <html>
@@ -12,8 +17,10 @@ require 'tarefa_controller.php';
 	<title>App Lista Tarefas</title>
 
 	<link rel="stylesheet" href="css/estilo.css">
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+		integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+		integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 
 	<script>
 		function editar(id, txt_tarefa) {
@@ -82,6 +89,33 @@ require 'tarefa_controller.php';
 			location.href = 'todas_tarefas.php?acao=filtrarTarefas&status=' + status;
 			// location.href = 'index.php'
 		}
+		function filterByCategory(category) {
+			location.href = 'todas_tarefas.php?acao=filtrarPorCategoria&categoria=' + category;
+		}
+
+		// Função para arquivar tarefas concluídas usando AJAX
+		function arquivarConcluidas() {
+			console.log("Aqui")
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function () {
+				if (xhr.readyState == 4 && xhr.status == 200){
+						var response = xhr.responseText;
+						if (response.success) {
+							console.log('Tarefas concluídas arquivadas com sucesso');
+						} else {
+							console.error('Falha ao arquivar tarefas concluídas');
+						}
+					} else {
+						// O servidor retornou um código de erro
+						console.error('Erro ao processar a solicitação');
+					}
+				}
+
+			// Configura a solicitação AJAX
+			xhr.open('POST', 'arquivar_concluidas.php', true);
+			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			xhr.send('arquivar_concluidas=true');
+			}
 	</script>
 </head>
 
@@ -117,6 +151,22 @@ require 'tarefa_controller.php';
 					<a onclick="filterBy('1')">Pendentes</a>
 					<a onclick="filterBy('2')">Concluidas</a>
 					<a onclick="location.href = 'todas_tarefas.php?acao=recuperar'">Todas as tarefas</a>
+					<div>
+						<label> Categoria</label>
+						<select id="cars" class="form-control" name="categoria_selecionada">
+							<option hidden selected>Select one...</option>
+							<?php foreach ($categorias as $categoria) { ?>
+								<option value="<?php echo $categoria->categoria; ?>">
+									<?php echo $categoria->categoria; ?>
+								</option>
+							<?php } ?>
+						</select>
+					</div>
+				</div>
+				<div>
+					<label for="arquivarConcluidas">Arquivar concluídas</label>
+					<input type="checkbox" <?php if ($dbService->returnIfHaveArchived()) { ?> checked <?php } ?>
+						id="arquivarConcluidas" onchange="arquivarConcluidas()">
 				</div>
 			</div>
 			<div class="col-sm-9">
@@ -125,24 +175,26 @@ require 'tarefa_controller.php';
 						<div class="col">
 							<h4>Todas tarefas</h4>
 							<hr />
-							<div id="tarefas">	
-							<?php foreach ($tarefas as $indice => $tarefa) { ?>
-								<div class="row mb-3 d-flex align-items-center tarefa">
-									<div class="col-sm-9" id="tarefa_<?= $tarefa->id ?>">
-										<?= $tarefa->tarefa ?> (<?= $tarefa->status ?>)
-										<?= $tarefa->prazo?>
+							<div id="tarefas">
+								<?php foreach ($tarefas as $indice => $tarefa) { ?>
+									<div class="row mb-3 d-flex align-items-center tarefa">
+										<div class="col-sm-9" id="tarefa_<?= $tarefa->id ?>">
+											<?= $tarefa->tarefa ?> (
+											<?= $tarefa->status ?>)
+											<?= $tarefa->prazo ?>
+										</div>
+										<div class="col-sm-3 mt-2 d-flex justify-content-between">
+											<i class="fas fa-trash-alt fa-lg text-danger"
+												onclick="remover(<?= $tarefa->id ?>)"></i>
+											<?php if ($tarefa->status == 'pendente') { ?>
+												<i class="fas fa-edit fa-lg text-info"
+													onclick="editar(<?= $tarefa->id ?>, '<?= $tarefa->tarefa ?>')"></i>
+												<i class="fas fa-check-square fa-lg text-success"
+													onclick="marcarRealizada(<?= $tarefa->id ?>)"></i>
+											<?php } ?>
+										</div>
 									</div>
-									<div class="col-sm-3 mt-2 d-flex justify-content-between">
-										<i class="fas fa-trash-alt fa-lg text-danger" onclick="remover(<?= $tarefa->id ?>)"></i>
-
-										<?php if ($tarefa->status == 'pendente') { ?>
-											<i class="fas fa-edit fa-lg text-info" onclick="editar(<?= $tarefa->id ?>, '<?= $tarefa->tarefa ?>')"></i>
-											<i class="fas fa-check-square fa-lg text-success" onclick="marcarRealizada(<?= $tarefa->id ?>)"></i>
-										<?php } ?>
-									</div>
-								</div>
-
-							<?php } ?>
+								<?php } ?>
 							</div>
 						</div>
 					</div>
@@ -150,20 +202,34 @@ require 'tarefa_controller.php';
 			</div>
 		</div>
 	</div>
+	</div>
 </body>
 <script>
-		(function verificarStatus() {
-			const lista = document.querySelectorAll('#tarefas .tarefa');
-       		lista.forEach(el => {
-			const prazo = new Date(el.outerText.slice(-10,el.outerText.length))
-			prazo.setDate(prazo.getDate()+1)
-            const hoje = new Date();
+	var select = document.querySelector('select');
+	select.addEventListener('change', function () {
+		var selecionada = this.options[this.selectedIndex];;
+		filterByCategory(selecionada.value)
+		console.log(selecionada.value)
+	});
 
-            if (prazo.getDate() === hoje.getDate() && prazo.getMonth() === hoje.getMonth() && prazo.getFullYear() === hoje.getFullYear()) {
-				el.innerText = el.innerText + " Atenção: O prazo dessa tarefa acaba hoje"
-            }
-        });
-		})()
+
+	(function verificarStatus() {
+		const lista = document.querySelectorAll('#tarefas .tarefa');
+		let encontrado = false; // Flag para indicar se uma tarefa com prazo para hoje foi encontrada
+
+		let i = 0;
+		while (i < lista.length && !encontrado) {
+			const prazo = new Date(lista[i].outerText.slice(-19, lista[i].outerText.length));
+			const hoje = new Date();
+
+			if (prazo.getDate() === hoje.getDate() && prazo.getMonth() === hoje.getMonth() && prazo.getFullYear() === hoje.getFullYear()) {
+				encontrado = true; // Marca como encontrado
+				alert("Você tem tarefas que estão para vencer hoje");
+			}
+
+			i++;
+		}
+	})();
 </script>
 
 </html>

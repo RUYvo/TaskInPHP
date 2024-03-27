@@ -11,6 +11,7 @@ if ($acao == 'inserir') {
 	$tarefa = new Tarefa();
 	$tarefa->__set('tarefa', $_POST['tarefa']);
 	$tarefa->__set('prazo', $_POST['prazo']);
+	$tarefa->__set('categoria', $_POST['categoria_selecionada']);
 
 	$conexao = new Conexao();
 
@@ -94,4 +95,11 @@ else if ($acao == 'filtrarTarefas') {
 
 	$tarefaService = new TarefaService($conexao, $tarefa);
 	$tarefas = $tarefaService->filtrarTarefas();
-} 
+}
+else if($acao == 'filtrarPorCategoria'){
+	$tarefa = new Tarefa();
+	$conexao = new Conexao();
+
+	$tarefaService = new TarefaService($conexao, $tarefa);
+	$tarefas = $tarefaService->filtrarPorCategoria($_GET["categoria"]);
+}

@@ -16,10 +16,11 @@ class TarefaService
 
 	public function inserir()
 	{ //create
-		$query = 'insert into tb_tarefas(tarefa,prazo)values(:tarefa,:prazo)';
+		$query = "INSERT INTO tb_tarefas (tarefa, prazo, id_categoria) VALUES (:tarefa, :prazo, (SELECT id FROM categoria WHERE categoria = :categoria))";
 		$stmt = $this->conexao->prepare($query);
 		$stmt->bindValue(':tarefa', $this->tarefa->__get('tarefa'));
 		$stmt->bindValue(':prazo', $this->tarefa->__get('prazo'));
+		$stmt->bindValue(':categoria', $this->tarefa->__get('categoria'));
 		$stmt->execute();
 	}
 
@@ -27,10 +28,10 @@ class TarefaService
 	{ //read
 		$query = '
 			select 
-				t.id, s.status, t.tarefa, t.prazo 
+				t.id, s.status, t.tarefa, t.prazo
 			from 
 				tb_tarefas as t
-				left join tb_status as s on (t.id_status = s.id)
+				left join tb_status as s on (t.id_status = s.id) WHERE t.arquivada != 1
 		';
 		$stmt = $this->conexao->prepare($query);
 		$stmt->execute();
@@ -70,7 +71,7 @@ class TarefaService
 	{
 		$query = '
 			select 
-				t.id, s.status, t.tarefa 
+				t.id, s.status, t.tarefa, t.prazo
 			from 
 				tb_tarefas as t
 				left join tb_status as s on (t.id_status = s.id)
@@ -86,7 +87,7 @@ class TarefaService
 	public function ordenarTarefas()
 	{
 		$orderBy = $_GET["atribute"];
-		$query = "SELECT t.id, s.status, t.tarefa FROM tb_tarefas as t LEFT JOIN tb_status as s ON (t.id_status = s.id) ORDER BY $orderBy";
+		$query = "SELECT t.id, s.status, t.tarefa, t.prazo FROM tb_tarefas as t LEFT JOIN tb_status as s ON (t.id_status = s.id) ORDER BY $orderBy";
 		$stmt = $this->conexao->prepare($query);
 		$stmt->execute();
 		return $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -94,9 +95,18 @@ class TarefaService
 
 	public function filtrarTarefas(){
 		$idStatus = $_GET["status"];
-		$query = "SELECT t.id, s.status, t.tarefa FROM tb_tarefas as t LEFT JOIN tb_status as s ON (t.id_status = s.id) WHERE t.id_status = $idStatus";
+		$query = "SELECT t.id, s.status, t.tarefa, t.prazo FROM tb_tarefas as t LEFT JOIN tb_status as s ON (t.id_status = s.id) WHERE t.id_status = $idStatus";
 		$stmt = $this->conexao->prepare($query);
 		$stmt->execute();
 		return $stmt->fetchAll(PDO::FETCH_OBJ);
 	}
+
+	public function filtrarPorCategoria($categoria)
+    {
+		$query = "SELECT t.id, s.status, t.tarefa, t.prazo FROM tb_tarefas as t LEFT JOIN tb_status as s ON (t.id_status = s.id) WHERE id_categoria = (SELECT id FROM categoria WHERE categoria = ?)";
+		$stmt = $this->conexao->prepare($query);
+		$stmt->execute([$categoria]);
+		return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
 }

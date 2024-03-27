@@ -7,6 +7,8 @@ class Tarefa {
 	private $prazo;
 	private $data_cadastro;
 
+	private $categoria;
+
 	public function __get($atributo) {
 		return $this->$atributo;
 	}
