@@ -1,12 +1,11 @@
 <?php
 $acao = 'recuperar';
 require_once 'tarefa_controller.php';
-
+require_once 'conexao.php';
 require_once 'db.service.php';
 $conexao = new Conexao();
 $dbService = new DbService($conexao);
 $categorias = $dbService->pegarCategorias();
-
 ?>
 
 <html>
@@ -93,29 +92,31 @@ $categorias = $dbService->pegarCategorias();
 			location.href = 'todas_tarefas.php?acao=filtrarPorCategoria&categoria=' + category;
 		}
 
-		// Função para arquivar tarefas concluídas usando AJAX
 		function arquivarConcluidas() {
-			console.log("Aqui")
 			var xhr = new XMLHttpRequest();
 			xhr.onreadystatechange = function () {
-				if (xhr.readyState == 4 && xhr.status == 200){
-						var response = xhr.responseText;
+				if (xhr.readyState == 4) {
+					if (xhr.status == 200) {
+						var response = JSON.parse(xhr.responseText);
+
 						if (response.success) {
-							console.log('Tarefas concluídas arquivadas com sucesso');
+							console.log('Tarefas atualizadas com sucesso');
+							location.reload();
 						} else {
-							console.error('Falha ao arquivar tarefas concluídas');
+							console.error('Falha ao atualizar tarefas:', response.error);
 						}
 					} else {
-						// O servidor retornou um código de erro
-						console.error('Erro ao processar a solicitação');
+						console.error('Erro ao processar a solicitação:', xhr.status);
 					}
 				}
-
-			// Configura a solicitação AJAX
+			};
+			var isChecked = document.getElementById('arquivarConcluidas').checked;
 			xhr.open('POST', 'arquivar_concluidas.php', true);
 			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-			xhr.send('arquivar_concluidas=true');
-			}
+			xhr.send('arquivar_concluidas=' + isChecked); 
+		}
+
+
 	</script>
 </head>
 
@@ -165,8 +166,8 @@ $categorias = $dbService->pegarCategorias();
 				</div>
 				<div>
 					<label for="arquivarConcluidas">Arquivar concluídas</label>
-					<input type="checkbox" <?php if ($dbService->returnIfHaveArchived()) { ?> checked <?php } ?>
-						id="arquivarConcluidas" onchange="arquivarConcluidas()">
+					<input type="checkbox" id="arquivarConcluidas" <?php if ($dbService->returnIfHaveArchived()) { ?> checked <?php } ?>
+						onchange="arquivarConcluidas()">
 				</div>
 			</div>
 			<div class="col-sm-9">
